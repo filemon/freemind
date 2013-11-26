@@ -50,6 +50,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -536,6 +537,28 @@ public class FreeMind extends JFrame implements FreeMindMain {
 		// logger.info(msg);
 	}
 
+	public void openDocument(URI uri) throws Exception {
+		String propertyString;
+		String osName = System.getProperty("os.name");
+		if (osName.substring(0, 3).equals("Win")) {
+			propertyString = new String("default_browser_command_windows");
+			if (osName.indexOf("9") != -1 || osName.indexOf("Me") != -1) {
+				propertyString += "_9x";
+			} else {
+				propertyString += "_nt";
+			}
+		}
+        else if (osName.startsWith("Mac OS")) {
+			propertyString = new String("default_browser_command_mac");
+        }
+        else
+        	propertyString = new String("default_browser_command_other_os");
+		String browser_command = new String();
+		Object[] messageArguments = { uri.toString() };
+		MessageFormat formatter = new MessageFormat(getProperty(propertyString));
+		browser_command = formatter.format(messageArguments);
+		Runtime.getRuntime().exec(browser_command);
+	}
 	/**
 	 * Open url in WWW browser. This method hides some differences between
 	 * operating systems.

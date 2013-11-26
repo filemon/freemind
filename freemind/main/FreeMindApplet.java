@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.net.URI;
 
 import javax.swing.JApplet;
 import javax.swing.JComponent;
@@ -185,9 +186,15 @@ public class FreeMindApplet extends JApplet implements FreeMindMain {
 	public void err(String msg) {
 		status.setText("ERROR: " + msg);
 	}
-
+	
+	//@ Override
+	public void openDocument(URI location) throws Exception {
+	 // TODO Auto-generated method stub
+	 openDocument(location.toURL());	
+	}
+	 
 	public void openDocument(URL doc) throws Exception {
-		getAppletContext().showDocument(doc, "_blank");
+	  	getAppletContext().showDocument(doc,"_blank");
 	}
 
 	public void start() {
@@ -436,5 +443,4 @@ public class FreeMindApplet extends JApplet implements FreeMindMain {
 	public List getLoggerList() {
 		return new Vector();
 	}
-
 }

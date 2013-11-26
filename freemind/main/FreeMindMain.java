@@ -23,6 +23,7 @@ package freemind.main;
 import java.awt.Container;
 import java.io.File;
 import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -73,6 +74,8 @@ public interface FreeMindMain {
 
 	public void err(String msg);
 
+
+	public void openDocument(URI location) throws Exception;
 	/**
 	 * Open url in WWW browser. This method hides some differences between
 	 * operating systems.

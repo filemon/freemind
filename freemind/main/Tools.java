@@ -325,6 +325,21 @@ public class Tools {
 		return (i > 0 && i < s.length() - 1) ? s.substring(0, i) : "";
 	}
 
+      /**
+      * This method checks whether the passed string matches the syntax of a well-formed URL.
+      * 
+      * @param url
+      * @return true if url is well-formed
+      */
+    public static boolean isURLString(String url) {
+     	try {
+     		new URL(url);
+     	} catch (MalformedURLException e) {
+     		return false;
+     	}
+     	return true;
+    }
+
 	public static boolean isAbsolutePath(String path) {
 		// On Windows, we cannot just ask if the file name starts with file
 		// separator.

@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -496,6 +497,7 @@ public abstract class ControllerAdapter implements ModeController,
 		try {
 			logger.info("Trying to open " + relative);
 			URL absolute = null;
+			boolean isURI = false;
 			if (Tools.isAbsolutePath(relative)) {
 				// Protocol can be identified by rexep pattern "[a-zA-Z]://.*".
 				// This should distinguish a protocol path from a file path on
@@ -531,64 +533,65 @@ public abstract class ControllerAdapter implements ModeController,
 									target));
 				}
 				return;
-
-			} else {
-				/*
-				 * Remark: getMap().getURL() returns URLs like file:/C:/... It
-				 * seems, that it does not cause any problems.
-				 */
-				absolute = new URL(getMap().getURL(), relative);
-			}
-			// look for reference part in URL:
-			URL originalURL = absolute;
-			String ref = absolute.getRef();
-			if (ref != null) {
-				// remove ref from absolute:
-				absolute = Tools.getURLWithoutReference(absolute);
-			}
-			String extension = Tools.getExtension(absolute.toString());
-			if ((extension != null)
-					&& extension
-							.equals(freemind.main.FreeMindCommon.FREEMIND_FILE_EXTENSION_WITHOUT_DOT)) { // ----
-																											// Open
-																											// Mind
-																											// Map
-				logger.info("Trying to open mind map " + absolute);
-				MapModuleManager mapModuleManager = getController()
-						.getMapModuleManager();
-				/*
-				 * this can lead to confusion if the user handles multiple maps
-				 * with the same name. Obviously, this is wrong. Get a better
-				 * check whether or not the file is already opened.
-				 */
-				String mapExtensionKey = mapModuleManager
-						.checkIfFileIsAlreadyOpened(absolute);
-				if (mapExtensionKey == null) {
-					getFrame().setWaitingCursor(true);
-					load(absolute);
-				} else {
-					mapModuleManager.tryToChangeToMapModule(mapExtensionKey);
-				}
-				if (ref != null) {
-					try {
-						ModeController newModeController = getController()
-								.getModeController();
-						// jump to link:
-						newModeController.centerNode(newModeController
-								.getNodeFromID(ref));
-					} catch (Exception e) {
-						freemind.main.Resources.getInstance().logException(e);
-						getFrame().out(
-								Tools.expandPlaceholders(
-										getText("link_not_found"), ref));
-						return;
-					}
-				}
-			} else {
-				// ---- Open URL in browser
-				getFrame().openDocument(originalURL);
-			}
-		} catch (MalformedURLException ex) {
+			} else if (Tools.isURLString(relative)){
+ 	            	/*
+                      * Remark: getMap().getURL() returns URLs like file:/C:/...
+                      * It seems, that it does not cause any problems.
+                      */
+               absolute = new URL(getMap().getURL(), relative);
+            } else {
+            	/* It's not a file, it's not a URL, it has to be an URI
+            	 * (e.g. link to Lotus Notes via notes://... etc. 
+            	 */
+            	isURI = true;
+             }
+			
+			 if (isURI) {
+		        	   try {
+			        		   URI uri = new URI(relative);
+			        		   getFrame().openDocument(uri);
+			        	   } catch (URISyntaxException eu) {
+			        		   freemind.main.Resources.getInstance().logException(eu);
+			        		   getController().errorMessage(getText("uri_error")+"\n"+eu);
+			        	   }
+			           } else {
+			        // look for reference part in URL:
+			          		URL originalURL = absolute;
+			           		String ref = absolute.getRef();
+			           		if(ref != null) {
+			               		// remove ref from absolute:
+			               		absolute = Tools.getURLWithoutReference(absolute);
+			           		}
+			           		String extension = Tools.getExtension(absolute.toString());
+			           		if ((extension != null) && extension.equals(freemind.main.FreeMindCommon.FREEMIND_FILE_EXTENSION_WITHOUT_DOT)) {   // ---- Open Mind Map
+			        	   		logger.info("Trying to open mind map " + absolute);
+			        	   		MapModuleManager mapModuleManager = getController().getMapModuleManager();
+			              		/*this can lead to confusion if the user handles multiple maps with the same name.
+			               		 * Obviously, this is wrong. Get a better check whether or not the file is already opened.*/
+			              		String mapExtensionKey = mapModuleManager.checkIfFileIsAlreadyOpened(absolute);
+			              		if(mapExtensionKey == null) {
+			            	  		getFrame().setWaitingCursor(true);
+			                 		load(absolute);
+			              		} else {
+			            	  		mapModuleManager.tryToChangeToMapModule(mapExtensionKey);
+			              		}
+			              		if (ref != null) {
+			                		try {
+			                    		ModeController newModeController = getController().getModeController();
+			                    	// jump to link:
+			                    		newModeController.centerNode(newModeController.getNodeFromID(ref));
+			                		} catch (Exception e) {
+			                    		freemind.main.Resources.getInstance().logException(e);
+			                    		getFrame().out(Tools.expandPlaceholders(getText("link_not_found"), ref));
+			                    		return;
+			                		}
+			            		}
+			            	} else {
+			         	   	 // ---- Open URL in browser
+			               		getFrame().openDocument(originalURL);
+			          	  	 }
+			           }
+	} catch (MalformedURLException ex) {
 			freemind.main.Resources.getInstance().logException(ex);
 			getController().errorMessage(getText("url_error") + "\n" + ex);
 			return;

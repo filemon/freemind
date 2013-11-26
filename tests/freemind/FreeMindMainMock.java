@@ -109,6 +109,10 @@ public class FreeMindMainMock implements FreeMindMain {
 	public void err(String msg) {
 	}
 
+	public void openDocument(URI location) throws Exception {
+	}
+
+
 	public void openDocument(URL location) throws Exception {
 	}
 
