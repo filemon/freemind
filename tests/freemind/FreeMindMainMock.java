@@ -23,6 +23,7 @@ package tests.freemind;
 import java.awt.Container;
 import java.io.File;
 import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
